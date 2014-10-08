@@ -1,3 +1,4 @@
 .*.sw?
 .sw?
+*.log
 /node_modules
