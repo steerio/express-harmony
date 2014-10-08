@@ -1,0 +1,28 @@
+{
+  "name": "express-harmony",
+  "version": "0.0.1",
+  "description": "Express Harmony",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "test": "mocha --harmony"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:steerio/express-harmony.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/steerio/express-harmony/issues"
+  },
+  "homepage": "https://github.com/steerio/express-harmony",
+  "dependencies": {
+    "express": "4.*",
+    "q": "*"
+  },
+  "devDependencies": {
+    "mocha": "~1.21.4",
+    "supertest": "~0.13.0"
+  }
+}
