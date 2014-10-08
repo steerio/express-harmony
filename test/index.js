@@ -4,7 +4,7 @@ var express = require('..'),
     lstat = require('q').denodeify(require('fs').lstat),
     re = /"atime":/;
 
-// Define middleware and callbacks to test with.
+// Middleware and callbacks to test with.
 // The generator and function versions shall do the same.
 
 var middleware = {
@@ -15,6 +15,23 @@ var middleware = {
   "function": function (req, res, next) {
     lstat('package.json').then(function (ls) {
       req.foo = ls;
+      next();
+    });
+  }
+}
+
+var params = {
+  "generator": function* (req, res, next, fname) {
+    try {
+      req.foo = yield lstat(fname);
+    } catch(e) {}
+    next();
+  },
+  "function": function (req, res, next, fname) {
+    lstat(fname).then(function (ls) {
+      req.foo = ls;
+      next();
+    }).fail(function () {
       next();
     });
   }
@@ -32,25 +49,25 @@ var callbacks = {
   }
 }
 
-// Function to iterate the above
+// Helper functions
 
 function iterate(obj, fn) {
   Object.getOwnPropertyNames(obj).forEach(function (n) {
-    fn(n+"s", obj[n]);
+    fn(n, obj[n]);
   });
 }
 
-// Callback to render value saved by the middleware
-
-function valueFromRequest(req, res) { res.json(req.foo); }
-
-// Actual tests
+function valueFromRequest(req, res) {
+  if (req.foo)
+    res.json(req.foo); else
+    res.status(404);
+}
 
 describe('App', function () {
   var routes = router().get('/bar', valueFromRequest);
 
   iterate(middleware, function (kind, mware) {
-    it('should accept '+kind+' as middleware', function (done) {
+    it('should accept a '+kind+' as middleware', function (done) {
       var app = express().use(mware).use('/foo', routes);
 
       request(app).
@@ -63,7 +80,7 @@ describe('App', function () {
 
 describe('Router', function () {
   iterate(middleware, function (kind, mware) {
-    it('should accept '+kind+' as middleware', function (done) {
+    it('should accept a '+kind+' as middleware', function (done) {
       var routes = router(),
           app = express().use('/foo', routes);
 
@@ -77,8 +94,28 @@ describe('Router', function () {
     });
   });
 
+  iterate(params, function (kind, handler) {
+    it('should accept a '+kind+' as param handler', function (done) {
+      var routes = router(),
+          app = express().use('/foo', routes);
+
+      routes.param('fname', handler);
+      routes.get('/:fname', valueFromRequest);
+
+      request(app).
+        get('/foo/package.json').
+        expect(re).
+        end(done);
+
+      request(app).
+        get('/foo/NONEXISTENT').
+        expect(404).
+        end(done);
+    });
+  });
+
   iterate(callbacks, function (kind, cbk) {
-    it('should accept '+kind+' as callback', function (done) {
+    it('should accept a '+kind+' as callback', function (done) {
       var routes = router().get('/bar', cbk),
           app = express().use('/foo', routes);
 

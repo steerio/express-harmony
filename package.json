@@ -1,22 +1,15 @@
 {
   "name": "express-harmony",
+  "description": "Express 4 for Harmony",
   "version": "0.0.1",
-  "description": "Express Harmony",
+  "author": {
+    "name": "Roland Venesz",
+    "email": "roland.venesz@wopata.com"
+  },
   "main": "index.js",
-  "license": "MIT",
   "scripts": {
     "test": "mocha --harmony"
   },
-  "repository": {
-    "type": "git",
-    "url": "git@github.com:steerio/express-harmony.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/steerio/express-harmony/issues"
-  },
-  "homepage": "https://github.com/steerio/express-harmony",
   "dependencies": {
     "express": "4.*",
     "q": "*"
@@ -24,5 +17,15 @@
   "devDependencies": {
     "mocha": "~1.21.4",
     "supertest": "~0.13.0"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/steerio/express-harmony/issues"
+  },
+  "homepage": "https://github.com/steerio/express-harmony",
+  "keywords": [ "express", "framework", "harmony" ],
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:steerio/express-harmony.git"
   }
 }

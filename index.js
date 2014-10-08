@@ -16,34 +16,42 @@ if (!gen) {
   return;
 }
 
-var router = ex.Router,
-    Q = require('q'),
-    proto = require('express/lib/application'),
-    map = Array.prototype.map,
-    slice = Array.prototype.slice;
+var Q = require('q'),
+    map = Array.prototype.map;
 
 function convert(obj) {
   return obj.constructor == gen ? Q.async(obj) : obj;
 }
 
-(function () {
-  var use = proto.use;
-  proto.use = function () {
+function patchUse(obj) {
+  var use = obj.use;
+
+  obj.use = function () {
     return use.apply(this, map.call(arguments, convert));
   }
-})();
+}
 
-(function () {
-  var use = router.use;
-  router.use = function () {
-    return use.apply(this, map.call(arguments, convert));
+// App prototype
+
+patchUse(require('express/lib/application'));
+
+// Router
+
+patchUse(ex.Router);
+
+(function (router) {
+  var param = router.param;
+
+  router.param = function (name, cbk) {
+    return param.call(this, name, convert(cbk));
   }
-})();
+})(ex.Router);
 
-require('express/node_modules/methods').concat('all').forEach(function (m) {
-  router[m] = function (path) {
-    var route = this.route(path);
-    route[m].apply(route, slice.call(arguments, 1).map(convert));
-    return this;
-  };
-});
+(function (proto) {
+  require('express/node_modules/methods').concat('all').forEach(function (m) {
+    var orig = proto[m];
+    proto[m] = function () {
+      return orig.apply(this, map.call(arguments, convert));
+    };
+  });
+})(require('express/lib/router/route').prototype);
