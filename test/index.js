@@ -49,6 +49,16 @@ var callbacks = {
   }
 }
 
+var errors = {
+  "generator": function* (err, req, res, next) {
+    var stat = yield lstat('package.json');
+    res.status(500).json({ code: err.code });
+  },
+  "function": function (err, req, res, next) {
+    res.status(500).json({ code: err.code });
+  }
+}
+
 // Helper functions
 
 function iterate(obj, fn) {
@@ -73,6 +83,23 @@ describe('App', function () {
       request(app).
         get('/foo/bar').
         expect(re).
+        end(done);
+    });
+  });
+
+  iterate(errors, function (kind, handler) {
+    it('should capture errors and send to '+kind+' handlers', function (done) {
+      var routes = router(),
+          app = express().use(routes).use(handler)
+
+      routes.get('/foo', function* (req, res) {
+        var ls = yield lstat("NONEXISTENT");
+        res.json(ls);
+      });
+
+      request(app).
+        get('/foo').
+        expect(/ENOENT/).
         end(done);
     });
   });
