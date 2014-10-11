@@ -16,11 +16,34 @@ if (!gen) {
   return;
 }
 
-var Q = require('q'),
-    map = Array.prototype.map;
+var map = Array.prototype.map;
+
+function normalHandler(generator) {
+  return function (req, res, next) {
+    var instance = generator(req, res, next);
+    function advance(arg) {
+      var out = instance.next(arg);
+      if (!out.done) out.value.then(advance).fail(next);
+    }
+    advance();
+  }
+}
+
+function errorHandler(generator) {
+  return function (err, req, res, next) {
+    var instance = generator(err, req, res, next);
+    function advance(arg) {
+      var out = instance.next(arg);
+      if (!out.done) out.value.then(advance).fail(next);
+    }
+    advance();
+  }
+}
 
 function convert(obj) {
-  return obj.constructor == gen ? Q.async(obj) : obj;
+  if (obj.constructor == gen) {
+    return obj.length == 4 ? errorHandler(obj) : normalHandler(obj);
+  } else return obj;
 }
 
 function patchUse(obj) {

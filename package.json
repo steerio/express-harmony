@@ -11,10 +11,10 @@
     "test": "mocha --harmony"
   },
   "dependencies": {
-    "express": "4.*",
-    "q": "*"
+    "express": "4.*"
   },
   "devDependencies": {
+    "q": "*",
     "mocha": "~1.21.4",
     "supertest": "~0.13.0"
   },
