@@ -41,7 +41,7 @@ router.get('/read/:fname', function* (req, res) {
   res.json({ content: file });
 });
 
-app.use(function* (err, req, res, next) {
+app.use(function (err, req, res, next) {
   res.status(500).json({ code: err.code });
 })
 ```
