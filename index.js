@@ -21,9 +21,14 @@ var map = Array.prototype.map;
 function normalHandler(generator) {
   return function (req, res, next) {
     var instance = generator(req, res, next);
+    function fail(arg) {
+      var out;
+      try { out = instance.throw(arg) } catch (e) { next(arg) }
+      if (!out.done) out.value.then(advance).fail(fail);
+    }
     function advance(arg) {
       var out = instance.next(arg);
-      if (!out.done) out.value.then(advance).fail(next);
+      if (!out.done) out.value.then(advance).fail(fail);
     }
     advance();
   }
@@ -32,9 +37,14 @@ function normalHandler(generator) {
 function errorHandler(generator) {
   return function (err, req, res, next) {
     var instance = generator(err, req, res, next);
+    function fail(arg) {
+      var out;
+      try { out = instance.throw(arg) } catch (e) { next(arg) }
+      if (!out.done) out.value.then(advance).fail(fail);
+    }
     function advance(arg) {
       var out = instance.next(arg);
-      if (!out.done) out.value.then(advance).fail(next);
+      if (!out.done) out.value.then(advance).fail(fail);
     }
     advance();
   }
